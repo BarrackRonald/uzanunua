@@ -1,0 +1,71 @@
+name: uzanunua
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uzanunua-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: uzanunua
+      POSTGRES_PASSWORD: uzanunua_dev
+      POSTGRES_DB: uzanunua
+    ports:
+      - "5432:5432"
+    volumes:
+      - uzanunua_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uzanunua -d uzanunua"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: uzanunua-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - uzanunua_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  typesense:
+    image: typesense/typesense:27.1
+    container_name: uzanunua-typesense
+    restart: unless-stopped
+    environment:
+      TYPESENSE_API_KEY: uzanunua_dev_search_key
+      TYPESENSE_DATA_DIR: /data
+    ports:
+      - "8108:8108"
+    volumes:
+      - uzanunua_typesense_data:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: uzanunua-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: uzanunua
+      MINIO_ROOT_PASSWORD: uzanunua_dev_secret
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Console
+    volumes:
+      - uzanunua_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  uzanunua_postgres_data:
+  uzanunua_redis_data:
+  uzanunua_typesense_data:
+  uzanunua_minio_data:

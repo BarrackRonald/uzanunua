@@ -1,0 +1,31 @@
+// UzaNunua — Prisma schema
+//
+// Phase 1 (Foundation) scope: connection wiring + a single trivial model
+// used only to prove migrations run end-to-end against the dev database.
+//
+// DEFERRED: the full entity model (User, Seller, Product, Order, Payment,
+// Inventory, etc. — ~60 tables) is specified in
+// docs/architecture/03-database-architecture.md and is implemented in
+// Phase 4 (Catalogue) onward, introduced incrementally per-domain as each
+// phase lands, rather than all at once here. This is a deliberate
+// sequencing choice (Section 79/80 of the master brief), not an omission:
+// each phase's migration only adds the tables that phase's features
+// actually need, so every migration is reviewable against real, shipping
+// functionality.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Placeholder model proving the Postgres connection + migration pipeline
+/// works end-to-end. Removed in the Phase 4 migration once real domain
+/// models land.
+model SystemHealthCheck {
+  id        String   @id @default(uuid())
+  checkedAt DateTime @default(now())
+}
