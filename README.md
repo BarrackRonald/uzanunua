@@ -72,33 +72,4 @@ Then:
 | `pnpm db:generate` | Regenerates the Prisma client |
 | `pnpm db:migrate` | Runs a Prisma migration in dev mode |
 
-## What's deliberately deferred (and why)
-
-Per Section 81 of the master brief ("no placeholder architecture," but explicit, documented deferral is fine):
-
-- **Full entity model** (User, Seller, Product, Order, Payment, etc.) — specified in `docs/architecture/03-database-architecture.md`, introduced incrementally from Phase 4 onward, per-domain, so every migration maps to real shipping functionality rather than landing as one giant unused schema.
-- **Design system tokens/components** — Phase 2. `apps/web`'s Tailwind config is wired but intentionally has no custom theme yet.
-- **Auth** — Phase 3.
-- **CI security scanning + E2E-against-staging** — added once those have something real to scan/target (Phase 25 / once staging exists).
-
-## Verification status
-
-Run in the sandbox this repo was built in (no Docker daemon, and package registries restricted to npm/GitHub — `binaries.prisma.sh` is not reachable from it):
-
-| Check | Result |
-|---|---|
-| `pnpm install` | ✅ passes (838 packages) |
-| `pnpm typecheck` (web, api, domain-types) | ✅ passes |
-| `pnpm lint` (web, api) | ✅ passes, zero warnings |
-| `pnpm --filter @uzanunua/api test` | ✅ 4/4 pass (health controller, all branches: ok / db-down / redis-down / liveness) |
-| `pnpm --filter @uzanunua/web build` | ✅ succeeds, produces static/dynamic route output |
-| `pnpm --filter @uzanunua/api build` | ✅ succeeds (`nest build`) |
-| `docker-compose.yml`, `.github/workflows/ci.yml`, all `package.json`/`tsconfig.json` | ✅ parse as valid YAML/JSON |
-| `prisma generate` | ❌ **cannot verify in this sandbox** — Prisma's query-engine binary is fetched from `binaries.prisma.sh` at generate-time, which this sandbox's network policy doesn't allow (only npm/GitHub registries are reachable here). This is a sandbox restriction, not a code issue — `binaries.prisma.sh` is a normal, unrestricted download in any real dev machine or CI runner (including the GitHub Actions workflow in this repo, which runs on GitHub's own infrastructure). |
-| Full `docker compose up -d && pnpm dev` live run against real Postgres/Redis | ❌ **not run here** — no Docker daemon in this sandbox. Structurally this is the same gap as above: works in any real environment, untestable in this one. |
-
-**What this means practically:** everything that can be verified without live infrastructure — types, lint, unit tests, both production builds — is verified and passing. The one thing to confirm on your own machine on first run is `pnpm db:generate` and `pnpm --filter @uzanunua/api exec prisma migrate dev --name init` completing against your local `docker compose up -d` stack, which the Getting Started steps above already walk through. If that surfaces anything unexpected, it's the first thing to debug — everything upstream of it (workspace wiring, app code, tests, builds) is confirmed solid.
-
-## Next phase
-
-**Phase 2 — Design System**: implement the full token set from `docs/architecture/05-design-system.md` as `@uzanunua/design-system`, build the core component primitives (buttons, inputs, cards, badges, skeletons, etc.) on shadcn/ui, and wire light/dark themes into `apps/web`.
+Still in Development, I will Keep updating
